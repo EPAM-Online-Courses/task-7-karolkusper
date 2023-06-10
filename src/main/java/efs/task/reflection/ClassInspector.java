@@ -1,8 +1,13 @@
 package efs.task.reflection;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ClassInspector {
 
@@ -18,7 +23,15 @@ public class ClassInspector {
   public static Collection<String> getAnnotatedFields(final Class<?> type,
       final Class<? extends Annotation> annotation) {
     //TODO usuń zawartość tej metody i umieść tutaj swoje rozwiązanie
-    return Collections.emptyList();
+    Set<String> listaPol = new HashSet<>();
+    for(Field pole : type.getDeclaredFields())
+    {
+      if(pole.isAnnotationPresent(annotation))
+      {
+        listaPol.add(pole.getName());
+      }
+    }
+    return new ArrayList<>(listaPol);
   }
 
   /**
@@ -32,7 +45,12 @@ public class ClassInspector {
    */
   public static Collection<String> getAllDeclaredMethods(final Class<?> type) {
     //TODO usuń zawartość tej metody i umieść tutaj swoje rozwiązanie
-    return Collections.emptyList();
+    Set<String> listaMetod = new HashSet<>();
+    Method [] metody = type.getDeclaredMethods();
+    for(Method metoda : metody){
+      listaMetod.add(metoda.getName());
+    }
+    return new ArrayList<>(listaMetod);
   }
 
   /**
@@ -51,6 +69,27 @@ public class ClassInspector {
    */
   public static <T> T createInstance(final Class<T> type, final Object... args) throws Exception {
     //TODO usuń zawartość tej metody i umieść tutaj swoje rozwiązanie
-    return null;
+    for(Constructor<?> konstruktor : type.getDeclaredConstructors())
+    {
+      konstruktor.setAccessible(true);
+      Class<?> [] parametry=konstruktor.getParameterTypes();
+      if(parametry.length==args.length)
+      {
+        boolean flag=true;
+        for(int i=0;i<parametry.length;i++)
+        {
+          if(!parametry[i].isInstance(args[i]))
+          {
+            flag=false;
+            break;
+          }
+        }
+        if(flag)
+        {
+          return type.cast(konstruktor.newInstance(args));
+        }
+      }
+    }
+    throw new NoSuchMethodException("Matching constructor not found");
   }
 }
